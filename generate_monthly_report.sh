@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Usage: ./generate_monthly_report.sh [YYYY-MM] or ./generate_monthly_report.sh [start_date] [end_date]
+repositoryOwner="your_org"
 
 # Function to get first and last day of a month
 get_month_range() {
@@ -61,8 +62,7 @@ echo "======================================================"
 
 # Fetch merged PRs using GitHub CLI
 echo "Fetching merged pull requests..."
-pr_data=$(gh search prs --author=@me --merged --created=2025-07-01..2025-07-31 --json title,repository,url,closedAt,number --limit 100)
-# pr_data=$(gh search prs --author=@me --merged --created="$start_date..$end_date" --json title,repository,url,closedAt,number --limit 100)
+pr_data=$(gh search prs --author=@me --owner="$repositoryOwner" --merged --created="$start_date..$end_date" --json title,repository,url,closedAt,number)
 
 # Check if we got any data
 if [[ -z "$pr_data" || "$pr_data" == "[]" ]]; then
@@ -84,20 +84,51 @@ echo ""
 echo "$pr_data" | jq -r '.[] |
 "Repository: " + .repository.nameWithOwner +
 "\nTitle: " + .title +
-"\nPR Number: (.number | tostring) +
+"\nPR Number: #" + (.number | tostring) +
 "\nClosed At: " + .closedAt +
 "\nDiff URL: " + .url + ".diff" +
 "\nPR URL: " + .url +
 "\n" + ("-" * 60) + "\n"'
 
-# Generate summary by repository
 echo ""
 echo "SUMMARY BY REPOSITORY"
 echo "===================="
 echo "$pr_data" | jq -r 'group_by(.repository.nameWithOwner) | .[] |
-"\(length) PRs in " + .[0].repository.nameWithOwner'
+"\(length) PRs: " + .[0].repository.nameWithOwner'
 
 echo ""
-echo "DIFF URLS ONLY"
+echo "DIFF URLS"
 echo "================================"
 echo "$pr_data" | jq -r '.[].url + ".diff"'
+
+echo ""
+echo "GENERATING DIFFs"
+echo "==============================================="
+
+# Create time range directory
+time_range="${start_date}_${end_date}"
+mkdir -p "diffs/$time_range"
+
+# Filter repositories and generate diff files
+org_prs=$(echo "$pr_data" | jq -r '.[]')
+
+if [[ -n "$org_prs" && "$org_prs" != "null" ]]; then
+    echo "$org_prs" | jq -r '"\(.repository.nameWithOwner)|\(.number)|\(.title)"' | while IFS='|' read -r repo_name pr_number pr_title; do
+
+        # Clean up title for filename (remove special characters)
+        clean_title=$(echo "$pr_title" | sed 's/[^a-zA-Z0-9 -]//g' | sed 's/ /_/g' | cut -c1-50)
+        repo_short=$(echo "$repo_name" | cut -d'/' -f2)
+        filename="${repo_short}-${pr_number}-${clean_title}.txt"
+
+        echo "Generating diff for PR #$pr_number: $pr_title"
+        gh pr diff "$pr_number" --repo "$repo_name" > "diffs/$time_range/$filename" 2>/dev/null
+
+        if [[ $? -eq 0 ]]; then
+            echo "  ✓ Generated: diffs/$time_range/$filename"
+        else
+            echo "  ✗ Failed to generate diff for PR #$pr_number"
+        fi
+    done
+else
+    echo "No repositories found in the results."
+fi
