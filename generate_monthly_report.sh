@@ -3,7 +3,6 @@
 # Usage: ./generate_monthly_report.sh [YYYY-MM] or ./generate_monthly_report.sh [start_date] [end_date]
 repositoryOwner="your_org"
 
-# Function to get first and last day of a month
 get_month_range() {
     local year_month=$1
     local year=$(echo $year_month | cut -d'-' -f1)
@@ -32,6 +31,50 @@ get_month_range() {
     fi
 
     echo "$start_date $end_date"
+}
+
+generate_diff_files() {
+    local pr_data=$1
+    local start_date=$2
+    local end_date=$3
+
+    echo ""
+    echo "DIFF URLS"
+    echo "================================"
+    echo "$pr_data" | jq -r '.[].url + ".diff"'
+
+    echo ""
+    echo "GENERATING DIFFs"
+    echo "==============================================="
+
+    # Create time range directory
+    local time_range="${start_date}_${end_date}"
+    mkdir -p "diffs/$time_range"
+
+    # Scope repositories & generate diff files
+    local org_prs
+    org_prs=$(echo "$pr_data" | jq -r '.[]')
+
+    if [[ -n "$org_prs" && "$org_prs" != "null" ]]; then
+        echo "$org_prs" | jq -r '"\(.repository.nameWithOwner)|\(.number)|\(.title)"' | while IFS='|' read -r repo_name pr_number pr_title; do
+
+            # Clean up title for filename (remove special characters)
+            clean_title=$(echo "$pr_title" | sed 's/[^a-zA-Z0-9 -]//g' | sed 's/ /_/g' | cut -c1-50)
+            repo_short=$(echo "$repo_name" | cut -d'/' -f2)
+
+            filename="${repo_short}-${pr_number}-${clean_title}.txt"
+
+            gh pr diff "$pr_number" --repo "$repo_name" > "diffs/$time_range/$filename" 2>/dev/null
+
+            if [[ $? -eq 0 ]]; then
+                echo " ✓✓✓ Generated: diffs/$time_range/$filename"
+            else
+                echo " ✗✗✗✗✗✗✗✗✗ Failed to generate diff for PR #$pr_number"
+            fi
+        done
+    else
+        echo "No repositories found."
+    fi
 }
 
 # Parse command line arguments
@@ -96,39 +139,4 @@ echo "===================="
 echo "$pr_data" | jq -r 'group_by(.repository.nameWithOwner) | .[] |
 "\(length) PRs: " + .[0].repository.nameWithOwner'
 
-echo ""
-echo "DIFF URLS"
-echo "================================"
-echo "$pr_data" | jq -r '.[].url + ".diff"'
-
-echo ""
-echo "GENERATING DIFFs"
-echo "==============================================="
-
-# Create time range directory
-time_range="${start_date}_${end_date}"
-mkdir -p "diffs/$time_range"
-
-# Filter repositories and generate diff files
-org_prs=$(echo "$pr_data" | jq -r '.[]')
-
-if [[ -n "$org_prs" && "$org_prs" != "null" ]]; then
-    echo "$org_prs" | jq -r '"\(.repository.nameWithOwner)|\(.number)|\(.title)"' | while IFS='|' read -r repo_name pr_number pr_title; do
-
-        # Clean up title for filename (remove special characters)
-        clean_title=$(echo "$pr_title" | sed 's/[^a-zA-Z0-9 -]//g' | sed 's/ /_/g' | cut -c1-50)
-        repo_short=$(echo "$repo_name" | cut -d'/' -f2)
-        filename="${repo_short}-${pr_number}-${clean_title}.txt"
-
-        echo "Generating diff for PR #$pr_number: $pr_title"
-        gh pr diff "$pr_number" --repo "$repo_name" > "diffs/$time_range/$filename" 2>/dev/null
-
-        if [[ $? -eq 0 ]]; then
-            echo "  ✓ Generated: diffs/$time_range/$filename"
-        else
-            echo "  ✗ Failed to generate diff for PR #$pr_number"
-        fi
-    done
-else
-    echo "No repositories found in the results."
-fi
+generate_diff_files "$pr_data" "$start_date" "$end_date"
