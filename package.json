@@ -1,0 +1,14 @@
+{
+  "name": "github-reports-tax-costs",
+  "version": "1.0.0",
+  "description": "Semi-automated tool for generating monthly tax deductible reports based on GitHub pull requests.",
+  "scripts": {
+    "start": "bash generate_monthly_report.sh"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Jakub Zomerfeld",
+    "email": "dev.zomerfeld@gmail.com"
+  },
+  "license": "MIT"
+}
