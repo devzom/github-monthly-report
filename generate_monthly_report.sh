@@ -3,6 +3,35 @@
 # Usage: ./generate_monthly_report.sh [YYYY-MM] or ./generate_monthly_report.sh [start_date] [end_date]
 repositoryOwner="your_org"
 
+generate_pr_report() {
+    local pr_data=$1
+
+    # Count total PRs
+    total_prs=$(echo "$pr_data" | jq 'length')
+    echo "Found $total_prs merged pull requests"
+    echo ""
+
+    echo "PR DIFFS FOR TAX DEDUCTIBLE REPORT"
+    echo "=================================="
+    echo ""
+
+    # Parse and output PR details with diff URLs
+    echo "$pr_data" | jq -r '.[] |
+    "Repository: " + .repository.nameWithOwner +
+    "\nTitle: " + .title +
+    "\nPR Number: #" + (.number | tostring) +
+    "\nClosed At: " + .closedAt +
+    "\nDiff URL: " + .url + ".diff" +
+    "\nPR URL: " + .url +
+    "\n" + ("-" * 60) + "\n"'
+
+    echo ""
+    echo "SUMMARY BY REPOSITORY"
+    echo "===================="
+    echo "$pr_data" | jq -r 'group_by(.repository.nameWithOwner) | .[] |
+    "\(length) PRs: " + .[0].repository.nameWithOwner'
+}
+
 get_month_range() {
     local year_month=$1
     local year=$(echo $year_month | cut -d'-' -f1)
@@ -89,20 +118,20 @@ generate_diff_files() {
     fi
 }
 
-# Parse command line arguments
 if [[ $# -eq 0 ]]; then
-    # Default to current month
+    # Use `current month` by default
     current_month=$(date "+%Y-%m")
     range=$(get_month_range $current_month)
     start_date=$(echo $range | cut -d' ' -f1)
     end_date=$(echo $range | cut -d' ' -f2)
 elif [[ $# -eq 1 ]]; then
-    # Single argument: YYYY-MM format
+
+    # YYYY-MM format
     range=$(get_month_range $1)
     start_date=$(echo $range | cut -d' ' -f1)
     end_date=$(echo $range | cut -d' ' -f2)
 elif [[ $# -eq 2 ]]; then
-    # Two arguments: start_date end_date
+
     start_date=$1
     end_date=$2
 else
@@ -115,40 +144,14 @@ fi
 echo "Generating report for period: $start_date to $end_date"
 echo "======================================================"
 
-# Fetch merged PRs using GitHub CLI
 echo "Fetching merged pull requests..."
 pr_data=$(gh search prs --author=@me --owner="$repositoryOwner" --merged --created="$start_date..$end_date" --json title,repository,url,closedAt,number)
 
-# Check if we got any data
 if [[ -z "$pr_data" || "$pr_data" == "[]" ]]; then
     echo "No merged pull requests found for the specified period."
     exit 0
 fi
 
-# Count total PRs
-total_prs=$(echo "$pr_data" | jq 'length')
-echo "Found $total_prs merged pull requests"
-echo ""
-
-# Generate report
-echo "PR DIFFS FOR TAX DEDUCTIBLE REPORT"
-echo "=================================="
-echo ""
-
-# Parse and output PR details with diff URLs
-echo "$pr_data" | jq -r '.[] |
-"Repository: " + .repository.nameWithOwner +
-"\nTitle: " + .title +
-"\nPR Number: #" + (.number | tostring) +
-"\nClosed At: " + .closedAt +
-"\nDiff URL: " + .url + ".diff" +
-"\nPR URL: " + .url +
-"\n" + ("-" * 60) + "\n"'
-
-echo ""
-echo "SUMMARY BY REPOSITORY"
-echo "===================="
-echo "$pr_data" | jq -r 'group_by(.repository.nameWithOwner) | .[] |
-"\(length) PRs: " + .[0].repository.nameWithOwner'
+generate_pr_report "$pr_data"
 
 generate_diff_files "$pr_data" "$start_date" "$end_date"
