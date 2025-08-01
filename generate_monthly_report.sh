@@ -51,6 +51,10 @@ generate_diff_files() {
     local time_range="${start_date}_${end_date}"
     mkdir -p "diffs/$time_range"
 
+    # Generation summary file
+    local summary_file="diffs/$time_range/summary.txt"
+    echo "# Summary for $start_date to $end_date" > "$summary_file"
+
     # Scope repositories & generate diff files
     local org_prs
     org_prs=$(echo "$pr_data" | jq -r '.[]')
@@ -68,12 +72,20 @@ generate_diff_files() {
 
             if [[ $? -eq 0 ]]; then
                 echo " ✓✓✓ Generated: diffs/$time_range/$filename"
+
+                echo "[$pr_title]-[$filename]" >> "$summary_file"
             else
                 echo " ✗✗✗✗✗✗✗✗✗ Failed to generate diff for PR #$pr_number"
             fi
         done
     else
         echo "No repositories found."
+    fi
+
+    # Display summary file creation
+    if [[ -f "$summary_file" ]]; then
+        echo ""
+        echo " ✓✓✓ Generated summary: $summary_file"
     fi
 }
 
