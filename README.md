@@ -1,83 +1,187 @@
-# Monthly GitHub PR Report Generator
+# Monthly work report generator based on GitHub PR diffs
 
-Semi-automated tool for generating monthly tax deductible reports based on GitHub pull requests.
+Comprehensive tool for generating monthly tax deductible reports based on GitHub pull requests.
+Automatically downloads diff files and creates organized summaries for tax reporting purposes.
 
-## Prerequisites
+## Setups
 
 - GitHub CLI (`gh`) installed and authenticated
 - `jq` command-line JSON processor
+- Bash shell (macOS/Linux)
+
+### Installing GitHub CLI
+
+**macOS (Homebrew):**
+```bash
+brew install gh
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt update
+sudo apt install gh
+```
+
+**Other platforms:** Visit https://cli.github.com/ for installation instructions
+
+### Installing jq
+
+**macOS (Homebrew):**
+```bash
+brew install jq
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt update
+sudo apt install jq
+```
+
+### Authentication
+
+**Initial GitHub CLI auth:**
+
+```bash
+# Authenticate with GitHub
+gh auth login
+```
+
+Follow the interactive prompts to:
+1. Choose GitHub.com
+2. Select HTTPS or SSH protocol
+3. Authenticate via web browser or personal access token
+4. Choose your preferred git protocol
+
+**Verify auth:**
+```bash
+# Check authentication status
+gh auth status
+
+# Test API access
+gh api user
+```
+
+**Required permissions:**
+The authenticated user needs:
+- Read access to repositories in the target organization
+- Ability to view pull requests and their diffs
+
+### Script Setup
+
+**Make script executable:**
+```bash
+chmod +x generate_monthly_report.sh
+```
+
+**Configure organization (optional):**
+Edit the script to change the target organization:
+```bash
+# Open script in editor
+nano generate_monthly_report.sh
+
+# Modify this line:
+repositoryOwner="your-org-name"
+```
 
 ## Usage
-
-### Basic Usage
 
 ```bash
 # Generate report for current month
 ./generate_monthly_report.sh
 
 # Generate report for specific month (YYYY-MM format)
-./generate_monthly_report.sh 2024-07
+./generate_monthly_report.sh 2025-07
 
 # Generate report for custom date range
-./generate_monthly_report.sh 2024-07-01 2024-07-31
+./generate_monthly_report.sh 2025-07-01 2025-07-31
 ```
 
 ### Output
 
 The script generates:
 
-1. **Detailed PR Information**: Repository, title, PR number, close date, diff URL, and PR URL
+1. **Console Report**: Detailed PR information with repository, title, PR number, close date, diff URL, and PR URL
 2. **Summary by Repository**: Count of PRs per repository
-3. **Diff URLs Only**: Clean list of diff URLs for easy copying
+3. **Diff File Downloads**: Individual diff files saved locally in organized directory structure
+4. **Summary File**: Master list linking PR titles to their corresponding diff files
 
 ### Example Output
 
 ```
-Generating report for period: 2024-07-01 to 2024-07-31
+Generating report for period: 2025-07-01 to 2025-07-31
 ======================================================
 Fetching merged pull requests...
-Found 15 merged pull requests
+Found 8 merged pull requests
 
 PR DIFFS FOR TAX DEDUCTIBLE REPORT
 ==================================
 
-Repository: your_org/**
-Title: ***
-PR Number: #4156
-Closed At: 2024-07-31T09:58:43Z
-Diff URL: url.diff
-PR URL: ...4156
+Repository: your-org-name/repositoryExample
+Title: prefix-168: Fix export and release o pkg
+PR Number: #218
+Closed At: 2025-04-29T11:25:40Z
+Diff URL: https://github.com/your-org-name/repositoryExample/pull/218.diff
+PR URL: https://github.com/your-org-name/repositoryExample/pull/218
 ------------------------------------------------------------
 
 SUMMARY BY REPOSITORY
 ====================
-13 PRs in your_org/someRepo
+6 PRs: your-org-name/repositoryExample
+1 PRs: your-org-name/repositoryExample2
+1 PRs: your-org-name/repositoryExample3
 
-DIFF URLS ONLY
+DIFF URLS
 ================================
-https://github.com/your_org/someRepo/pull/4156.diff
-https://github.com/your_org/someRepo/pull/4149.diff
+https://github.com/your-org-name/repositoryExample/pull/218.diff
 ...
+
+GENERATING DIFFs
+===============================================
+ ✓✓✓ Generated: diffs/2025-07-01_2025-07-31/repositoryExample-217.......txt
+...
+
+ ✓✓✓ Generated summary: diffs/2025-07-01_2025-07-31/summary.txt
 ```
 
 ## Features
 
-- Automatically detects month boundaries
-- Fetches up to 100 merged PRs per month
-- Generates diff URLs by appending `.diff` to PR URLs
-- Provides multiple output formats for different use cases
-- Handles edge cases (no PRs found, invalid dates)
+- **Smart date handling**: Automatically detects month boundaries and handles edge cases
+- **Comprehensive PR search**: Fetches merged PRs for specified date ranges from configured organization
+- **Local diffs storage**: Downloads actual diff files and stores them in organized directory structure
+- **File organization**: Creates time-stamped directories (`YYYY-MM-DD_YYYY-MM-DD`) for easy archiving
+- **Summary generation**: Creates master summary file linking PR titles to their diff files
+- **Multiple outputs**: Console report, individual diff files, and summary file
+- **Error handling**: Gracefully handles missing PRs, network issues, and invalid dates
+- **Filename sanitization**: Cleans PR titles for safe filesystem usage
 
-## GitHub CLI Command Used
+## Structure
 
-The script uses this GitHub CLI command internally:
-```bash
-gh search prs --author=@me --merged --created=YYYY-MM-DD..YYYY-MM-DD --json title,repository,url,closedAt,number --limit 100
+The script creates the following directory structure:
+
+```
+diffs/
+└── YYYY-MM-DD_YYYY-MM-DD/
+    ├── summary.txt
+    ├── repo-name-123-PR_Title_Sanitized.txt
+    ├── repo-name-124-Another_PR_Title.txt
+    └── ...
 ```
 
-## Notes
+- **summary.txt**: Master file with format `[PR Title]-[filename]` for each diff
+- **Individual diffs files**: Named as `{repo-short-name}-{pr-number}-{sanitized-title}.txt`
 
-- Only merged pull requests are included
-- The script searches for PRs authored by the current GitHub user (`@me`)
-- Diff URLs provide the actual code changes in unified diff format
-- Perfect for tax deductible reporting requirements based on actual code contributions
+## GitHub CLI Commands Used
+
+The script uses these GitHub CLI commands internally:
+```bash
+# Search for merged PRs
+gh search prs --author=@me --owner="your-org-name" --merged --created="YYYY-MM-DD..YYYY-MM-DD" --json title,repository,url,closedAt,number
+
+# Download individual diff files
+gh pr diff "PR_NUMBER" --repo "REPO_NAME"
+```
+
+## Configuration
+
+The script need to configure organization / repo owner.
+To use with a different organization, modify the `repositoryOwner` variable at the top of the script.
