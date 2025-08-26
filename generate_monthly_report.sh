@@ -4,7 +4,9 @@
 repositoryOwner="your_org"
 
 generate_pr_report() {
-    local pr_data=$1
+    local pr_data, total_prs
+
+    pr_data=$1
 
     # Count total PRs
     total_prs=$(echo "$pr_data" | jq 'length')
@@ -33,30 +35,38 @@ generate_pr_report() {
 }
 
 get_month_range() {
-    local year_month=$1
-    local year=$(echo "$year_month" | cut -d'-' -f1)
-    local month=$(echo "$year_month" | cut -d'-' -f2)
+    local month;
+    local year;
+    local year_month;
+    local start_date;
+    local end_date;
+
+    year_month=$1;
+    year=$(echo "$year_month" | cut -d'-' -f1);
+    month=$(echo "$year_month" | cut -d'-' -f2);
 
     # First day of month
-    local start_date="${year}-${month}-01"
+    start_date="${year}-${month}-01"
 
-    # Last day of month
-    local last_day=$(date -j -f "%Y-%m-%d" "${year}-${month}-01" "+%Y-%m-%d" 2>/dev/null)
+    if [[ $? -eq 0 ]];
+     then
+        local next_year;
+        local next_month;
 
-    if [[ $? -eq 0 ]]; then
         # Get last day of the month
-        if [[ "$month" == "12" ]]; then
-            local next_year=$((year + 1))
-            local next_month="01"
+        if [[ "$month" == "12" ]];
+            then
+                next_year=$((year + 1))
+                next_month="01"
         else
-            local next_year=$year
-            local next_month=$(printf "%02d" $((10#$month + 1)))
+            next_year=$year
+            next_month=$(printf "%02d" $((10#$month + 1)))
         fi
 
-        local end_date=$(date -j -v-1d -f "%Y-%m-%d" "${next_year}-${next_month}-01" "+%Y-%m-%d")
+        end_date=$(date -j -v-1d -f "%Y-%m-%d" "${next_year}-${next_month}-01" "+%Y-%m-%d")
     else
         # Fallback for different date command
-        local end_date="${year}-${month}-31"
+        end_date="${year}-${month}-31"
     fi
 
     echo "$start_date $end_date"
@@ -119,22 +129,25 @@ generate_diff_files() {
 }
 
     # Use `current month` by default
-if [[ $# -eq 0 ]]; then
+if [[ $# -eq 0 ]];
+then
     current_month=$(date "+%Y-%m")
     range=$(get_month_range "$current_month")
     start_date=$(echo "$range" | cut -d' ' -f1)
     end_date=$(echo "$range" | cut -d' ' -f2)
 
     # Use date range from arguments
-elif [[ $# -eq 1 ]]; then
-    # YYYY-MM format
-    range=$(get_month_range "$1")
-    start_date=$(echo "$range" | cut -d' ' -f1)
-    end_date=$(echo "$range" | cut -d' ' -f2)
+elif [[ $# -eq 1 ]];
+    then
+        # YYYY-MM format
+        range=$(get_month_range "$1")
+        start_date=$(echo "$range" | cut -d' ' -f1)
+        end_date=$(echo "$range" | cut -d' ' -f2)
 
-elif [[ $# -eq 2 ]]; then
-    start_date=$1
-    end_date=$2
+elif [[ $# -eq 2 ]];
+    then
+        start_date=$1
+        end_date=$2
 
 else
     echo "Usage: $0 [YYYY-MM] or $0 [start_date] [end_date]"
@@ -150,9 +163,10 @@ echo "======================================================"
 echo "Fetching merged pull requests..."
 pr_data=$(gh search prs --author=@me --owner="$repositoryOwner" --merged --created="$start_date..$end_date" --json title,repository,url,closedAt,number)
 
-if [[ -z "$pr_data" || "$pr_data" == "[]" ]]; then
-    echo "No merged pull requests found for the specified date range."
-    exit 0
+if [[ -z "$pr_data" || "$pr_data" == "[]" ]];
+    then
+        echo "No merged pull requests found for the specified date range."
+        exit 0
 fi
 
 generate_pr_report "$pr_data"
