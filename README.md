@@ -7,7 +7,7 @@ Automatically downloads diff files and creates organized summaries for tax repor
 
 - GitHub CLI (`gh`) installed and authenticated
 - `jq` command-line JSON processor
-- Bash shell (macOS/Linux)
+- Bash shell (macOS/Linux) or Git Bash/WSL (Windows)
 
 ### Installing GitHub CLI
 
@@ -20,6 +20,18 @@ brew install gh
 ```bash
 sudo apt update
 sudo apt install gh
+```
+
+**Windows:**
+```powershell
+# Using winget (Windows 10 1709+)
+winget install --id GitHub.cli
+
+# Using Chocolatey
+choco install gh
+
+# Using Scoop
+scoop install gh
 ```
 
 **Other platforms:** Visit https://cli.github.com/ for installation instructions
@@ -35,6 +47,18 @@ brew install jq
 ```bash
 sudo apt update
 sudo apt install jq
+```
+
+**Windows:**
+```powershell
+# Using winget
+winget install stedolan.jq
+
+# Using Chocolatey
+choco install jq
+
+# Using Scoop
+scoop install jq
 ```
 
 ### Authentication
@@ -68,10 +92,29 @@ The authenticated user needs:
 
 ### Script Setup
 
-**Make script executable:**
+**Make script executable (macOS/Linux):**
 ```bash
 chmod +x generate_monthly_report.sh
 ```
+
+**Windows Setup:**
+For Windows users, you have several options:
+
+1. **Git Bash** (Recommended):
+   - Install Git for Windows (includes Git Bash)
+   - Open Git Bash terminal
+   - Navigate to script directory and run as shown in usage examples
+
+2. **Windows Subsystem for Linux (WSL)**:
+   - Install WSL2 with Ubuntu
+   - Install dependencies within WSL environment
+   - Run script from WSL terminal
+
+3. **PowerShell with Git Bash**:
+   ```powershell
+   # Run from PowerShell
+   bash ./generate_monthly_report.sh
+   ```
 
 **Configure organization (optional):**
 Edit the script to change the target organization:
@@ -85,6 +128,7 @@ repositoryOwner="your-org-name"
 
 ## Usage
 
+**macOS/Linux:**
 ```bash
 # Generate report for current month
 ./generate_monthly_report.sh
@@ -94,6 +138,30 @@ repositoryOwner="your-org-name"
 
 # Generate report for custom date range
 ./generate_monthly_report.sh 2025-07-01 2025-07-31
+```
+
+**Windows (Git Bash):**
+```bash
+# Generate report for current month
+./generate_monthly_report.sh
+
+# Generate report for specific month (YYYY-MM format)
+./generate_monthly_report.sh 2025-07
+
+# Generate report for custom date range
+./generate_monthly_report.sh 2025-07-01 2025-07-31
+```
+
+**Windows (PowerShell):**
+```powershell
+# Generate report for current month
+bash ./generate_monthly_report.sh
+
+# Generate report for specific month (YYYY-MM format)
+bash ./generate_monthly_report.sh 2025-07
+
+# Generate report for custom date range
+bash ./generate_monthly_report.sh 2025-07-01 2025-07-31
 ```
 
 ### Output
