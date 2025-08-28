@@ -128,6 +128,9 @@ repositoryOwner="your-org-name"
 
 ## Usage
 
+> [!IMPORTANT]
+> Change `your-org` in the main script to Github organization_name or username before running.
+
 **macOS/Linux:**
 ```bash
 # Generate report for current month
