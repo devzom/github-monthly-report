@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Usage: ./generate_monthly_report.sh [YYYY-MM] or ./generate_monthly_report.sh [start_date] [end_date]
-repositoryOwner="your_org"
+repositoryOwner="your-org-name"
 
 generate_pr_report() {
     local pr_data, total_prs
@@ -112,7 +112,7 @@ generate_diff_files() {
             if [[ $? -eq 0 ]]; then
                 echo " ✓✓✓ Generated: diffs/$time_range/$filename"
 
-                echo "[$pr_title]-[$filename]" >> "$summary_file"
+                echo "[$pr_title]-[$filename]/n" >> "$summary_file"
             else
                 echo " ✗✗✗✗✗✗✗✗✗ Failed to generate diff for PR #$pr_number"
             fi
