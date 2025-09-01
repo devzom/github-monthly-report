@@ -2,12 +2,13 @@
 
 Comprehensive tool for generating monthly tax deductible reports based on GitHub pull requests.
 Automatically downloads diff files and creates organized summaries for tax reporting purposes.
+By default it produce `.txt` files, but can be configured to generate `pdf` files as well.
 
 ## Setups
 
-- GitHub CLI (`gh`) installed and authenticated
-- `jq` command-line JSON processor
 - Bash shell (macOS/Linux) or Git Bash/WSL (Windows)
+- _GitHub CLI_ `gh` installed and authenticated
+- `jq` command-line JSON processor
 
 ### Installing GitHub CLI
 
@@ -94,7 +95,7 @@ The authenticated user needs:
 
 **Make script executable (macOS/Linux):**
 ```bash
-chmod +x generate_monthly_report.sh
+chmod +x generate-report.sh
 ```
 
 **Windows Setup:**
@@ -113,14 +114,14 @@ For Windows users, you have several options:
 3. **PowerShell with Git Bash**:
    ```powershell
    # Run from PowerShell
-   bash ./generate_monthly_report.sh
+   bash ./generate-report.sh
    ```
 
 **Configure organization (optional):**
 Edit the script to change the target organization:
 ```bash
 # Open script in editor
-nano generate_monthly_report.sh
+nano generate-report.sh
 
 # Modify this line:
 repositoryOwner="your-org-name"
@@ -143,37 +144,37 @@ brew install enscript ghostscript
 **macOS/Linux:**
 ```bash
 # Generate report for current month
-./generate_monthly_report.sh
+./generate-report.sh
 
 # Generate report for specific month (YYYY-MM format)
-./generate_monthly_report.sh 2025-07
+./generate-report.sh 2025-07
 
 # Generate report for custom date range
-./generate_monthly_report.sh 2025-07-01 2025-07-31
+./generate-report.sh 2025-07-01 2025-07-31
 ```
 
 **Windows (Git Bash):**
 ```bash
 # Generate report for current month
-./generate_monthly_report.sh
+./generate-report.sh
 
 # Generate report for specific month (YYYY-MM format)
-./generate_monthly_report.sh 2025-07
+./generate-report.sh 2025-07
 
 # Generate report for custom date range
-./generate_monthly_report.sh 2025-07-01 2025-07-31
+./generate-report.sh 2025-07-01 2025-07-31
 ```
 
 **Windows (PowerShell):**
 ```powershell
 # Generate report for current month
-bash ./generate_monthly_report.sh
+bash ./generate-report.sh
 
 # Generate report for specific month (YYYY-MM format)
-bash ./generate_monthly_report.sh 2025-07
+bash ./generate-report.sh 2025-07
 
 # Generate report for custom date range
-bash ./generate_monthly_report.sh 2025-07-01 2025-07-31
+bash ./generate-report.sh 2025-07-01 2025-07-31
 ```
 
 ### Output
