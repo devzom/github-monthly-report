@@ -126,6 +126,15 @@ nano generate_monthly_report.sh
 repositoryOwner="your-org-name"
 ```
 
+
+#### PDF Generation (Optional)
+
+To generate diff files as PDF documents, you need to install the following dependencies via Homebrew:
+
+```bash
+brew install enscript ghostscript
+```
+
 ## Usage
 
 > [!IMPORTANT]

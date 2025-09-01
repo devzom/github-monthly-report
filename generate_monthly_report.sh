@@ -72,10 +72,42 @@ get_month_range() {
     echo "$start_date $end_date"
 }
 
+check_pdf_dependencies() {
+    local missing_deps=()
+
+    if ! command -v enscript &> /dev/null; then
+        missing_deps+=("enscript")
+    fi
+
+    if ! command -v ps2pdf &> /dev/null; then
+        missing_deps+=("ghostscript")
+    fi
+
+    if [ ${#missing_deps[@]} -ne 0 ]; then
+        echo "❌ Missing required dependencies for PDF generation:"
+        for dep in "${missing_deps[@]}"; do
+            echo "   - $dep"
+        done
+        echo ""
+        echo "Install with: brew install ${missing_deps[*]}"
+        echo "Falling back to .txt file generation..."
+        return 1
+    fi
+
+    return 0
+}
+
 generate_diff_files() {
     local pr_data=$1
     local start_date=$2
     local end_date=$3
+    local use_pdf=false
+
+    # Check if PDF dependencies are available
+    if check_pdf_dependencies; then
+        use_pdf=true
+        echo "✅ PDF dependencies found. Generating PDF files..."
+    fi
 
     echo ""
     echo "DIFF URLS"
@@ -104,17 +136,41 @@ generate_diff_files() {
             # Clean up title for filename (remove special characters)
             clean_title=$(echo "$pr_title" | sed 's/[^a-zA-Z0-9 -]//g' | sed 's/ /_/g' | cut -c1-50)
             repo_short=$(echo "$repo_name" | cut -d'/' -f2)
+            filename="${repo_short}-${pr_number}-${clean_title}"
 
-            filename="${repo_short}-${pr_number}-${clean_title}.txt"
+            if [[ "$use_pdf" == true ]]; then
+                _filename="$filename.pdf"
+                temp_file="/tmp/$filename.txt"
 
-            gh pr diff "$pr_number" --repo "$repo_name" > "diffs/$time_range/$filename" 2>/dev/null
+                # Get diff content and convert to PDF
+                gh pr diff "$pr_number" --repo "$repo_name" > "$temp_file" 2>/dev/null
 
-            if [[ $? -eq 0 ]]; then
-                echo " ✓✓✓ Generated: diffs/$time_range/$filename"
+                if [[ $? -eq 0 ]]; then
+                    # Convert text to PDF using enscript and ps2pdf
+                    enscript "$temp_file" -o - 2>/dev/null | ps2pdf - "diffs/$time_range/$_filename" 2>/dev/null
 
-                echo "[$pr_title]-[$filename]/n" >> "$summary_file"
+                    if [[ $? -eq 0 ]]; then
+                        echo " ✓✓✓ Generated: diffs/$time_range/$_filename"
+                        echo "[$pr_title]-[$_filename]" >> "$summary_file"
+                    else
+                        echo " ✗✗✗✗✗✗✗✗✗ Failed to convert diff to PDF for PR #$pr_number"
+                    fi
+
+                    # Clean up temp file
+                    rm -f "$temp_file"
+                else
+                    echo " ✗✗✗✗✗✗✗✗✗ Failed to generate diff for PR #$pr_number"
+                fi
             else
-                echo " ✗✗✗✗✗✗✗✗✗ Failed to generate diff for PR #$pr_number"
+                _filename="$filename.txt"
+                gh pr diff "$pr_number" --repo "$repo_name" > "diffs/$time_range/$_filename" 2>/dev/null
+
+                if [[ $? -eq 0 ]]; then
+                    echo " ✓✓✓ Generated: diffs/$time_range/$_filename"
+                    echo "[$pr_title]-[$_filename]" >> "$summary_file"
+                else
+                    echo " ✗✗✗✗✗✗✗✗✗ Failed to generate diff for PR #$pr_number"
+                fi
             fi
         done
     else
@@ -127,7 +183,6 @@ generate_diff_files() {
         echo " ✓✓✓ Generated summary: $summary_file"
     fi
 }
-
     # Use `current month` by default
 if [[ $# -eq 0 ]];
 then
