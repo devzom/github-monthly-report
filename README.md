@@ -19,18 +19,15 @@ brew install gh
 
 **Ubuntu/Debian:**
 ```bash
-sudo apt update
-sudo apt install gh
+sudo apt update && apt install gh
 ```
 
 **Windows:**
 ```powershell
 # Using winget (Windows 10 1709+)
 winget install --id GitHub.cli
-
 # Using Chocolatey
 choco install gh
-
 # Using Scoop
 scoop install gh
 ```
@@ -71,7 +68,7 @@ scoop install jq
 gh auth login
 ```
 
-Follow the interactive prompts to:
+Follow prompts to:
 1. Choose GitHub.com
 2. Select HTTPS or SSH protocol
 3. Authenticate via web browser or personal access token
@@ -81,9 +78,6 @@ Follow the interactive prompts to:
 ```bash
 # Check authentication status
 gh auth status
-
-# Test API access
-gh api user
 ```
 
 **Required permissions:**
@@ -117,16 +111,14 @@ For Windows users, you have several options:
    bash ./generate-report.sh
    ```
 
-**Configure organization (optional):**
-Edit the script to change the target organization:
-```bash
-# Open script in editor
-nano generate-report.sh
+> [!IMPORTANT]
+> Change `your-org` in the main script to Github organization_name or username before running.
+Edit the script to change the target organization name:
 
+```bash
 # Modify this line:
 repositoryOwner="your-org-name"
 ```
-
 
 #### PDF Generation (Optional)
 
@@ -138,22 +130,7 @@ brew install enscript ghostscript
 
 ## Usage
 
-> [!IMPORTANT]
-> Change `your-org` in the main script to Github organization_name or username before running.
-
-**macOS/Linux:**
-```bash
-# Generate report for current month
-./generate-report.sh
-
-# Generate report for specific month (YYYY-MM format)
-./generate-report.sh 2025-07
-
-# Generate report for custom date range
-./generate-report.sh 2025-07-01 2025-07-31
-```
-
-**Windows (Git Bash):**
+**macOS/Linux/Windows (Git Bash):**
 ```bash
 # Generate report for current month
 ./generate-report.sh
@@ -179,14 +156,12 @@ bash ./generate-report.sh 2025-07-01 2025-07-31
 
 ### Output
 
-The script generates:
+1. **Console log**: Detailed PR information with repository, title, PR number, close date, diff URL, and PR URL
+2. **Summary by repository**: Count of PRs per repository
+3. **Diff file downloads**: Individual diff files saved locally in organized directory structure
+4. **Summary file**: Master list linking PR titles to their corresponding diff files
 
-1. **Console Report**: Detailed PR information with repository, title, PR number, close date, diff URL, and PR URL
-2. **Summary by Repository**: Count of PRs per repository
-3. **Diff File Downloads**: Individual diff files saved locally in organized directory structure
-4. **Summary File**: Master list linking PR titles to their corresponding diff files
-
-### Example Output
+### Example output
 
 ```
 Generating report for period: 2025-07-01 to 2025-07-31
@@ -199,8 +174,8 @@ PR DIFFS FOR TAX DEDUCTIBLE REPORT
 
 Repository: your-org-name/repositoryExample
 Title: prefix-168: Fix export and release o pkg
-PR Number: #218
-Closed At: 2025-04-29T11:25:40Z
+PR number: #218
+Closed at: 2025-04-29T11:25:40Z
 Diff URL: https://github.com/your-org-name/repositoryExample/pull/218.diff
 PR URL: https://github.com/your-org-name/repositoryExample/pull/218
 ------------------------------------------------------------
