@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# Usage: ./generate_monthly_report.sh [YYYY-MM] or ./generate_monthly_report.sh [start_date] [end_date]
-repositoryOwner="your-org-name"
+# Usage: ./generate-report.sh [org_name] [YYYY-MM] or ./generate-report.sh [org_name] [start_date] [end_date]
+# Default organization name if not provided
+repositoryOwner=""
 
 generate_pr_report() {
-    local pr_data, total_prs
+    local pr_data
+    local total_prs
 
     pr_data=$1
 
@@ -183,35 +185,55 @@ generate_diff_files() {
         echo " ✓✓✓ Generated summary: $summary_file"
     fi
 }
-    # Use `current month` by default
-if [[ $# -eq 0 ]];
-then
-    current_month=$(date "+%Y-%m")
-    range=$(get_month_range "$current_month")
-    start_date=$(echo "$range" | cut -d' ' -f1)
-    end_date=$(echo "$range" | cut -d' ' -f2)
 
-    # Use date range from arguments
-elif [[ $# -eq 1 ]];
-    then
+# Parse arguments to handle organization name and date parameters
+parse_arguments() {
+    local org_name
+
+    # Check if first argument looks like an organization name (not a date)
+    if [[ $# -gt 0 && ! "$1" =~ ^[0-9]{4}-[0-9]{2}(-[0-9]{2})?$ ]]; then
+        org_name="$1"
+        shift
+    fi
+
+    # Set organization name
+    if [[ -n "$org_name" ]]; then
+        repositoryOwner="$org_name"
+    fi
+
+    # Parse remaining date arguments
+    if [[ $# -eq 0 ]]; then
+        # Use current month by default
+        current_month=$(date "+%Y-%m")
+        range=$(get_month_range "$current_month")
+        start_date=$(echo "$range" | cut -d' ' -f1)
+        end_date=$(echo "$range" | cut -d' ' -f2)
+    elif [[ $# -eq 1 ]]; then
         # YYYY-MM format
         range=$(get_month_range "$1")
         start_date=$(echo "$range" | cut -d' ' -f1)
         end_date=$(echo "$range" | cut -d' ' -f2)
+    elif [[ $# -eq 2 ]]; then
+        # start_date end_date format
+        start_date="$1"
+        end_date="$2"
+    else
+        echo "Usage: $0 [org_name] [YYYY-MM] or $0 [org_name] [start_date] [end_date]"
+        echo "-----------------------------------------------------------------------"
+        echo "Examples:"
+        echo "  $0                           # Current month, default org"
+        echo "  $0 2025-07                  # July 2025, default org"
+        echo "  $0 my-org                   # Current month, my-org"
+        echo "  $0 my-org 2025-07           # July 2025, my-org"
+        echo "  $0 my-org 2025-07-01 2025-07-31  # Date range, my-org"
+        exit 1
+    fi
+}
 
-elif [[ $# -eq 2 ]];
-    then
-        start_date=$1
-        end_date=$2
+# Call the argument parsing function
+parse_arguments "$@"
 
-else
-    echo "Usage: $0 [YYYY-MM] or $0 [start_date] [end_date]"
-    echo "-------------------------------------------------"
-    echo "Example: $0 2025-07" # Current month
-    echo "Example: $0 2025-07-01 2025-07-31"
-    exit 1
-fi
-
+echo "Using organization: $repositoryOwner"
 echo "Generating report for period: $start_date to $end_date"
 echo "======================================================"
 

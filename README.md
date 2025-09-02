@@ -2,7 +2,9 @@
 
 Comprehensive tool for generating monthly tax deductible reports based on GitHub pull requests.
 Automatically downloads diff files and creates organized summaries for tax reporting purposes.
-By default it produce `.txt` files, but can be configured to generate `pdf` files as well.
+By default it produces `.txt` files, but can be configured to generate `.pdf` files as well.
+
+Supports flexible organization targeting - either specify the organization as a parameter or set a default in the script.
 
 ## Setups
 
@@ -11,6 +13,9 @@ By default it produce `.txt` files, but can be configured to generate `pdf` file
 - `jq` command-line JSON processor
 
 ### Installing GitHub CLI
+
+<details>
+<summary>More details</summary>
 
 **macOS (Homebrew):**
 ```bash
@@ -34,17 +39,23 @@ scoop install gh
 
 **Other platforms:** Visit https://cli.github.com/ for installation instructions
 
+</details>
+
+
 ### Installing jq
 
+<details>
+<summary>More details</summary>
+
 **macOS (Homebrew):**
+
 ```bash
 brew install jq
 ```
 
 **Ubuntu/Debian:**
 ```bash
-sudo apt update
-sudo apt install jq
+sudo apt update && apt install jq
 ```
 
 **Windows:**
@@ -58,6 +69,8 @@ choco install jq
 # Using Scoop
 scoop install jq
 ```
+
+</details>
 
 ### Authentication
 
@@ -74,18 +87,14 @@ Follow prompts to:
 3. Authenticate via web browser or personal access token
 4. Choose your preferred git protocol
 
-**Verify auth:**
-```bash
-# Check authentication status
-gh auth status
-```
-
 **Required permissions:**
 The authenticated user needs:
 - Read access to repositories in the target organization
 - Ability to view pull requests and their diffs
 
 ### Script Setup
+<details>
+<summary>More details</summary>
 
 **Make script executable (macOS/Linux):**
 ```bash
@@ -96,29 +105,44 @@ chmod +x generate-report.sh
 For Windows users, you have several options:
 
 1. **Git Bash** (Recommended):
-   - Install Git for Windows (includes Git Bash)
-   - Open Git Bash terminal
-   - Navigate to script directory and run as shown in usage examples
+    - Install Git for Windows (includes Git Bash)
+    - Open Git Bash terminal
+    - Navigate to script directory and run as shown in usage examples
 
 2. **Windows Subsystem for Linux (WSL)**:
-   - Install WSL2 with Ubuntu
-   - Install dependencies within WSL environment
-   - Run script from WSL terminal
+    - Install WSL2 with Ubuntu
+    - Install dependencies within WSL environment
+    - Run script from WSL terminal
 
 3. **PowerShell with Git Bash**:
    ```powershell
    # Run from PowerShell
    bash ./generate-report.sh
    ```
+   
+</details>
 
-> [!IMPORTANT]
-> Change `your-org` in the main script to Github organization_name or username before running.
-Edit the script to change the target organization name:
+## Organization Configuration
+
+You have two options for specifying the target GitHub organization:
+
+### Option 1: Pass as Parameter (Recommended)
+Simply provide the organization name as the first parameter when running the script:
 
 ```bash
-# Modify this line:
+./generate-report.sh my-org-name
+```
+
+### Option 2: Edit Default in Script
+Alternatively, you can set a default organization by editing the script:
+
+```bash
+# Modify this line in generate-report.sh:
 repositoryOwner="your-org-name"
 ```
+
+> [!TIP]
+> Using the parameter approach (Option 1) is more flexible as it allows you to work with different organizations without modifying the script.
 
 #### PDF Generation (Optional)
 
@@ -130,27 +154,55 @@ brew install enscript ghostscript
 
 ## Usage
 
+### With Organization Parameter (Recommended)
+
 **macOS/Linux/Windows (Git Bash):**
 ```bash
-# Generate report for current month
+# Generate report for current month with specific organization
+./generate-report.sh my-org-name
+
+# Generate report for specific month with organization
+./generate-report.sh my-org-name 2025-07
+
+# Generate report for custom date range with organization
+./generate-report.sh my-org-name 2025-07-01 2025-07-31
+```
+
+**Windows (PowerShell):**
+```powershell
+# Generate report for current month with specific organization
+bash ./generate-report.sh my-org-name
+
+# Generate report for specific month with organization
+bash ./generate-report.sh my-org-name 2025-07
+
+# Generate report for custom date range with organization
+bash ./generate-report.sh my-org-name 2025-07-01 2025-07-31
+```
+
+### Using Default Organization
+
+**macOS/Linux/Windows (Git Bash):**
+```bash
+# Generate report for current month (uses default org from script)
 ./generate-report.sh
 
-# Generate report for specific month (YYYY-MM format)
+# Generate report for specific month (uses default org)
 ./generate-report.sh 2025-07
 
-# Generate report for custom date range
+# Generate report for custom date range (uses default org)
 ./generate-report.sh 2025-07-01 2025-07-31
 ```
 
 **Windows (PowerShell):**
 ```powershell
-# Generate report for current month
+# Generate report for current month (uses default org from script)
 bash ./generate-report.sh
 
-# Generate report for specific month (YYYY-MM format)
+# Generate report for specific month (uses default org)
 bash ./generate-report.sh 2025-07
 
-# Generate report for custom date range
+# Generate report for custom date range (uses default org)
 bash ./generate-report.sh 2025-07-01 2025-07-31
 ```
 
@@ -163,46 +215,52 @@ bash ./generate-report.sh 2025-07-01 2025-07-31
 
 ### Example output
 
+<details>
+
+<summary>More details</summary>
+
 ```
-Generating report for period: 2025-07-01 to 2025-07-31
-======================================================
-Fetching merged pull requests...
-Found 8 merged pull requests
-
-PR DIFFS FOR TAX DEDUCTIBLE REPORT
-==================================
-
-Repository: your-org-name/repositoryExample
-Title: prefix-168: Fix export and release o pkg
-PR number: #218
-Closed at: 2025-04-29T11:25:40Z
-Diff URL: https://github.com/your-org-name/repositoryExample/pull/218.diff
-PR URL: https://github.com/your-org-name/repositoryExample/pull/218
-------------------------------------------------------------
-
-SUMMARY BY REPOSITORY
-====================
-6 PRs: your-org-name/repositoryExample
-1 PRs: your-org-name/repositoryExample2
-1 PRs: your-org-name/repositoryExample3
-
-DIFF URLS
-================================
-https://github.com/your-org-name/repositoryExample/pull/218.diff
-...
-
-GENERATING DIFFs
-===============================================
- ✓✓✓ Generated: diffs/2025-07-01_2025-07-31/repositoryExample-217.......txt
-...
-
- ✓✓✓ Generated summary: diffs/2025-07-01_2025-07-31/summary.txt
+    Generating report for period: 2025-07-01 to 2025-07-31
+    ======================================================
+    Fetching merged pull requests...
+    Found 8 merged pull requests
+    
+    PR DIFFS FOR TAX DEDUCTIBLE REPORT
+    ==================================
+    
+    Repository: your-org-name/repositoryExample
+    Title: prefix-168: Fix export and release o pkg
+    PR number: #218
+    Closed at: 2025-04-29T11:25:40Z
+    Diff URL: https://github.com/your-org-name/repositoryExample/pull/218.diff
+    PR URL: https://github.com/your-org-name/repositoryExample/pull/218
+    ------------------------------------------------------------
+    
+    SUMMARY BY REPOSITORY
+    ====================
+    6 PRs: your-org-name/repositoryExample
+    1 PRs: your-org-name/repositoryExample2
+    1 PRs: your-org-name/repositoryExample3
+    
+    DIFF URLS
+    ================================
+    https://github.com/your-org-name/repositoryExample/pull/218.diff
+    ...
+    
+    GENERATING DIFFs
+    ===============================================
+    ✓✓✓ Generated: diffs/2025-07-01_2025-07-31/repositoryExample-217.......txt
+    ...
+    
+    ✓✓✓ Generated summary: diffs/2025-07-01_2025-07-31/summary.txt
 ```
+
+</details>
 
 ## Features
 
-- **Smart date handling**: Automatically detects month boundaries and handles edge cases
-- **Comprehensive PR search**: Fetches merged PRs for specified date ranges from configured organization
+- **Organization targeting**: Pass organization name as parameter or use default from script
+- **Smart date from/to handling**: Automatically detects month boundaries and handles edge cases
 - **Local diffs storage**: Downloads actual diff files and stores them in organized directory structure
 - **File organization**: Creates time-stamped directories (`YYYY-MM-DD_YYYY-MM-DD`) for easy archiving
 - **Summary generation**: Creates master summary file linking PR titles to their diff files
