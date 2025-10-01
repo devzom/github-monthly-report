@@ -12,65 +12,28 @@ Supports flexible organization targeting - either specify the organization as a 
 - _GitHub CLI_ `gh` installed and authenticated
 - `jq` command-line JSON processor
 
-### Installing GitHub CLI
-
-<details>
-<summary>More details</summary>
+### Installing GitHub CLI and jq
 
 **macOS (Homebrew):**
 ```bash
-brew install gh
+brew install gh jq
 ```
 
 **Ubuntu/Debian:**
 ```bash
-sudo apt update && apt install gh
+sudo apt update && apt install gh && apt install jq
 ```
 
 **Windows:**
 ```powershell
 # Using winget (Windows 10 1709+)
-winget install --id GitHub.cli
+winget install --id GitHub.cli && winget install stedolan.jq
 # Using Chocolatey
-choco install gh
-# Using Scoop
-scoop install gh
+choco install gh && choco install jq
 ```
 
 **Other platforms:** Visit https://cli.github.com/ for installation instructions
 
-</details>
-
-
-### Installing jq
-
-<details>
-<summary>More details</summary>
-
-**macOS (Homebrew):**
-
-```bash
-brew install jq
-```
-
-**Ubuntu/Debian:**
-```bash
-sudo apt update && apt install jq
-```
-
-**Windows:**
-```powershell
-# Using winget
-winget install stedolan.jq
-
-# Using Chocolatey
-choco install jq
-
-# Using Scoop
-scoop install jq
-```
-
-</details>
 
 ### Authentication
 
@@ -92,7 +55,7 @@ The authenticated user needs:
 - Read access to repositories in the target organization
 - Ability to view pull requests and their diffs
 
-### Script Setup
+### Script setup
 <details>
 <summary>More details</summary>
 
@@ -101,7 +64,7 @@ The authenticated user needs:
 chmod +x generate-report.sh
 ```
 
-**Windows Setup:**
+**Windows setup:**
 For Windows users, you have several options:
 
 1. **Git Bash** (Recommended):
@@ -109,7 +72,7 @@ For Windows users, you have several options:
     - Open Git Bash terminal
     - Navigate to script directory and run as shown in usage examples
 
-2. **Windows Subsystem for Linux (WSL)**:
+2. **Windows WSL**:
     - Install WSL2 with Ubuntu
     - Install dependencies within WSL environment
     - Run script from WSL terminal
@@ -119,21 +82,21 @@ For Windows users, you have several options:
    # Run from PowerShell
    bash ./generate-report.sh
    ```
-   
+
 </details>
 
-## Organization Configuration
+## Organization configuration
 
 You have two options for specifying the target GitHub organization:
 
-### Option 1: Pass as Parameter (Recommended)
+### Option 1: Pass as parameter (recommended)
 Simply provide the organization name as the first parameter when running the script:
 
 ```bash
 ./generate-report.sh my-org-name
 ```
 
-### Option 2: Edit Default in Script
+### Option 2: Edit default in script file
 Alternatively, you can set a default organization by editing the script:
 
 ```bash
@@ -144,7 +107,7 @@ repositoryOwner="your-org-name"
 > [!TIP]
 > Using the parameter approach (Option 1) is more flexible as it allows you to work with different organizations without modifying the script.
 
-#### PDF Generation (Optional)
+#### PDF Generation workflow (optional)
 
 To generate diff files as PDF documents, you need to install the following dependencies via Homebrew:
 
@@ -154,7 +117,7 @@ brew install enscript ghostscript
 
 ## Usage
 
-### With Organization Parameter (Recommended)
+### With organization parameter (recommended)
 
 **macOS/Linux/Windows (Git Bash):**
 ```bash
@@ -180,7 +143,7 @@ bash ./generate-report.sh my-org-name 2025-07
 bash ./generate-report.sh my-org-name 2025-07-01 2025-07-31
 ```
 
-### Using Default Organization
+### Using default organization
 
 **macOS/Linux/Windows (Git Bash):**
 ```bash
@@ -224,10 +187,10 @@ bash ./generate-report.sh 2025-07-01 2025-07-31
     ======================================================
     Fetching merged pull requests...
     Found 8 merged pull requests
-    
+
     PR DIFFS FOR TAX DEDUCTIBLE REPORT
     ==================================
-    
+
     Repository: your-org-name/repositoryExample
     Title: prefix-168: Fix export and release o pkg
     PR number: #218
@@ -235,23 +198,23 @@ bash ./generate-report.sh 2025-07-01 2025-07-31
     Diff URL: https://github.com/your-org-name/repositoryExample/pull/218.diff
     PR URL: https://github.com/your-org-name/repositoryExample/pull/218
     ------------------------------------------------------------
-    
+
     SUMMARY BY REPOSITORY
     ====================
     6 PRs: your-org-name/repositoryExample
     1 PRs: your-org-name/repositoryExample2
     1 PRs: your-org-name/repositoryExample3
-    
+
     DIFF URLS
     ================================
     https://github.com/your-org-name/repositoryExample/pull/218.diff
     ...
-    
+
     GENERATING DIFFs
     ===============================================
     ✓✓✓ Generated: diffs/2025-07-01_2025-07-31/repositoryExample-217.......txt
     ...
-    
+
     ✓✓✓ Generated summary: diffs/2025-07-01_2025-07-31/summary.txt
 ```
 
@@ -284,7 +247,7 @@ diffs/
 - **summary.txt**: Master file with format `[PR Title]-[filename]` for each diff
 - **Individual diffs files**: Named as `{repo-short-name}-{pr-number}-{sanitized-title}.txt`
 
-## GitHub CLI Commands Used
+## GitHub CLI commands used
 
 The script uses these GitHub CLI commands internally:
 ```bash
