@@ -105,7 +105,7 @@ generate_diff_files() {
     local end_date=$3
     local use_pdf=false
 
-    # Check if PDF dependencies are available
+    # Check if PDF dependencies are available in the OS
     if check_pdf_dependencies; then
         use_pdf=true
         echo "✅ PDF dependencies found. Generating PDF files..."
@@ -144,21 +144,21 @@ generate_diff_files() {
                 _filename="$filename.pdf"
                 temp_file="/tmp/$filename.txt"
 
-                # Get diff content and convert to PDF
+                # Get diff content
                 gh pr diff "$pr_number" --repo "$repo_name" > "$temp_file" 2>/dev/null
 
                 if [[ $? -eq 0 ]]; then
-                    # Convert text to PDF using enscript and ps2pdf
+                    # Convert diff content to PDF
                     enscript "$temp_file" -o - 2>/dev/null | ps2pdf - "diffs/$time_range/$_filename" 2>/dev/null
 
                     if [[ $? -eq 0 ]]; then
                         echo " ✓✓✓ Generated: diffs/$time_range/$_filename"
-                        echo "[$pr_title]-[$_filename]" >> "$summary_file"
+                        printf "[$pr_title]-[$_filename] %s\n" >> "$summary_file"
                     else
                         echo " ✗✗✗✗✗✗✗✗✗ Failed to convert diff to PDF for PR #$pr_number"
                     fi
 
-                    # Clean up temp file
+                    # Clean up temp diff file
                     rm -f "$temp_file"
                 else
                     echo " ✗✗✗✗✗✗✗✗✗ Failed to generate diff for PR #$pr_number"
@@ -179,7 +179,7 @@ generate_diff_files() {
         echo "No repositories found."
     fi
 
-    # Display summary file creation
+    # Summary file creation
     if [[ -f "$summary_file" ]]; then
         echo ""
         echo " ✓✓✓ Generated summary: $summary_file"
@@ -221,11 +221,11 @@ parse_arguments() {
         echo "Usage: $0 [org_name] [YYYY-MM] or $0 [org_name] [start_date] [end_date]"
         echo "-----------------------------------------------------------------------"
         echo "Examples:"
-        echo "  $0                           # Current month, default org"
-        echo "  $0 2025-07                  # July 2025, default org"
-        echo "  $0 my-org                   # Current month, my-org"
-        echo "  $0 my-org 2025-07           # July 2025, my-org"
-        echo "  $0 my-org 2025-07-01 2025-07-31  # Date range, my-org"
+        echo "  $0                              # Current month, default org"
+        echo "  $0 2025-07                      # July 2025, default org"
+        echo "  $0 my-org                       # Current month, my-org"
+        echo "  $0 my-org 2025-07               # July 2025, my-org"
+        echo "  $0 my-org 2025-07-01 2025-07-31 # Date range, my-org"
         exit 1
     fi
 }
