@@ -126,6 +126,7 @@ generate_diff_files() {
 
     # Generation summary file
     local summary_file="diffs/$time_range/summary.txt"
+    local temp_summary_file="diffs/$time_range/.summary_temp.txt"
     echo "# Summary for $start_date to $end_date" > "$summary_file"
 
     # Scope repositories & generate diff files
@@ -133,6 +134,9 @@ generate_diff_files() {
     org_prs=$(echo "$pr_data" | jq -r '.[]')
 
     if [[ -n "$org_prs" && "$org_prs" != "null" ]]; then
+        # Create temporary file for collecting entries
+        : > "$temp_summary_file"
+
         echo "$org_prs" | jq -r '"\(.repository.nameWithOwner)|\(.number)|\(.title)"' | while IFS='|' read -r repo_name pr_number pr_title; do
 
             # Clean up title for filename (remove special characters)
@@ -153,7 +157,7 @@ generate_diff_files() {
 
                     if [[ $? -eq 0 ]]; then
                         echo " ✓✓✓ Generated: diffs/$time_range/$_filename"
-                        printf "[$pr_title]-[$_filename] %s\n" >> "$summary_file"
+                        printf "%s|[$pr_title]-[$_filename]\n" "$repo_short" >> "$temp_summary_file"
                     else
                         echo " ✗✗✗✗✗✗✗✗✗ Failed to convert diff to PDF for PR #$pr_number"
                     fi
@@ -169,12 +173,18 @@ generate_diff_files() {
 
                 if [[ $? -eq 0 ]]; then
                     echo " ✓✓✓ Generated: diffs/$time_range/$_filename"
-                    echo "[$pr_title]-[$_filename]" >> "$summary_file"
+                    printf "%s|[$pr_title]-[$_filename]\n" "$repo_short" >> "$temp_summary_file"
                 else
                     echo " ✗✗✗✗✗✗✗✗✗ Failed to generate diff for PR #$pr_number"
                 fi
             fi
         done
+
+        # Sort entries by repository name and append to summary file
+        if [[ -f "$temp_summary_file" ]]; then
+            sort -t'|' -k1,1 "$temp_summary_file" | cut -d'|' -f2- >> "$summary_file"
+            rm -f "$temp_summary_file"
+        fi
     else
         echo "No repositories found."
     fi
