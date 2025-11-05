@@ -180,9 +180,18 @@ generate_diff_files() {
             fi
         done
 
-        # Sort entries by repository name and append to summary file
+        # Sort entries by repository name and append to summary file with section headers
         if [[ -f "$temp_summary_file" ]]; then
-            sort -t'|' -k1,1 "$temp_summary_file" | cut -d'|' -f2- >> "$summary_file"
+            local current_repo=""
+            sort -t'|' -k1,1 "$temp_summary_file" | while IFS='|' read -r repo_name entry; do
+                if [[ "$repo_name" != "$current_repo" ]]; then
+                    echo "" >> "$summary_file"
+                    echo "## $repo_name" >> "$summary_file"
+                    echo "" >> "$summary_file"
+                    current_repo="$repo_name"
+                fi
+                echo "$entry" >> "$summary_file"
+            done
             rm -f "$temp_summary_file"
         fi
     else
