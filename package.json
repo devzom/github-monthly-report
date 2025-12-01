@@ -1,8 +1,15 @@
 {
   "name": "github-reports-tax-costs",
   "description": "Semi-automated tool for generating monthly tax deductible reports based on GitHub merged pull requests.",
-  "version": "1.1.0",
-  "keywords": ["github", "reports", "tax", "costs", "automation", "bash"],
+  "version": "1.1.1",
+  "keywords": [
+    "github",
+    "reports",
+    "tax",
+    "costs",
+    "automation",
+    "bash"
+  ],
   "author": {
     "name": "Jakub Zomerfeld",
     "email": "dev.zomerfeld@gmail.com"
@@ -11,8 +18,8 @@
   "bugs": {
     "url": "https://example.org/bugs"
   },
-  "main": "generate_monthly_report.sh",
+  "main": "generate-report.sh",
   "scripts": {
-    "start": "bash generate_monthly_report.sh"
+    "start": "bash generate-report.sh"
   }
 }
