@@ -14,13 +14,12 @@ Supports flexible organization targeting - either specify the organization as a 
 
 ### Installing GitHub CLI and jq
 
-**macOS (Homebrew):**
-```bash
-brew install gh jq
-```
 
-**Ubuntu/Debian:**
 ```bash
+# macOS (Homebrew)
+brew install gh jq
+
+# Ubuntu/Debian
 sudo apt update && apt install gh && apt install jq
 ```
 
@@ -34,7 +33,6 @@ choco install gh && choco install jq
 
 **Other platforms:** Visit https://cli.github.com/ for installation instructions
 
-
 ### Authentication
 
 #### Initial GitHub CLI auth:
@@ -44,7 +42,7 @@ choco install gh && choco install jq
 gh auth login
 ```
 
-Follow prompts to:
+##### Follow prompts to
 1. Choose GitHub.com
 2. Select HTTPS or SSH protocol
 3. Authenticate via web browser or personal access token
