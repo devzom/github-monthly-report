@@ -37,7 +37,7 @@ choco install gh && choco install jq
 
 ### Authentication
 
-**Initial GitHub CLI auth:**
+#### Initial GitHub CLI auth:
 
 ```bash
 # Authenticate with GitHub
@@ -50,8 +50,7 @@ Follow prompts to:
 3. Authenticate via web browser or personal access token
 4. Choose your preferred git protocol
 
-**Required permissions:**
-The authenticated user needs:
+#### Required permissions:
 - Read access to repositories in the target organization
 - Ability to view pull requests and their diffs
 
@@ -59,12 +58,12 @@ The authenticated user needs:
 <details>
 <summary>More details</summary>
 
-**Make script executable (macOS/Linux):**
+#### Make script executable (macOS/Linux):
 ```bash
 chmod +x generate-report.sh
 ```
 
-**Windows setup:**
+#### Windows setup:
 For Windows users, you have several options:
 
 1. **Git Bash** (Recommended):
@@ -117,56 +116,23 @@ brew install enscript ghostscript
 
 ## Usage
 
+### Configuration
+
+The script need to configure organization / repo owner.
+To use with a different organization, modify the `repositoryOwner` variable at the top of the script.
+
 ### With organization parameter (recommended)
 
-**macOS/Linux/Windows (Git Bash):**
-```bash
-# Generate report for current month with specific organization
-./generate-report.sh my-org-name
-
-# Generate report for specific month with organization
-./generate-report.sh my-org-name 2025-07
-
-# Generate report for custom date range with organization
-./generate-report.sh my-org-name 2025-07-01 2025-07-31
-```
-
-**Windows (PowerShell):**
-```powershell
-# Generate report for current month with specific organization
-bash ./generate-report.sh my-org-name
-
-# Generate report for specific month with organization
-bash ./generate-report.sh my-org-name 2025-07
-
-# Generate report for custom date range with organization
-bash ./generate-report.sh my-org-name 2025-07-01 2025-07-31
-```
-
-### Using default organization
-
-**macOS/Linux/Windows (Git Bash):**
+#### macOS/Linux/Windows (Git Bash):
 ```bash
 # Generate report for current month (uses default org from script)
 ./generate-report.sh
-
-# Generate report for specific month (uses default org)
-./generate-report.sh 2025-07
-
-# Generate report for custom date range (uses default org)
-./generate-report.sh 2025-07-01 2025-07-31
-```
-
-**Windows (PowerShell):**
-```powershell
-# Generate report for current month (uses default org from script)
-bash ./generate-report.sh
-
-# Generate report for specific month (uses default org)
-bash ./generate-report.sh 2025-07
-
-# Generate report for custom date range (uses default org)
-bash ./generate-report.sh 2025-07-01 2025-07-31
+# Generate report for current month with specific organization
+./generate-report.sh my-org-name
+# Generate report for specific month with organization
+./generate-report.sh my-org-name 2025-07
+# Generate report for custom date range with organization
+./generate-report.sh my-org-name 2025-07-01 2025-07-31
 ```
 
 ### Output
@@ -262,8 +228,3 @@ gh pr diff "PR_NUMBER" --repo "REPO_NAME"
 gh api "repos/OWNER/REPO/pulls/PR_NUMBER/files" --paginate
 # https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests-files
 ```
-
-## Configuration
-
-The script need to configure organization / repo owner.
-To use with a different organization, modify the `repositoryOwner` variable at the top of the script.
