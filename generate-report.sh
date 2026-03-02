@@ -99,6 +99,22 @@ check_pdf_dependencies() {
     return 0
 }
 
+# Fallback: reconstruct diff via REST API when gh pr diff fails (e.g. too_large)
+get_diff_via_api() {
+    local repo_name=$1
+    local pr_number=$2
+    local output_file=$3
+
+    # paginate through all files
+    gh api "repos/${repo_name}/pulls/${pr_number}/files" \
+        --paginate --jq '.[] |
+        "diff --git a/" + .filename + " b/" + .filename +
+        "\n--- a/" + .filename +
+        "\n+++ b/" + .filename +
+        (if .patch then "\n" + .patch else "" end) +
+        "\n"' > "$output_file" 2>/dev/null
+}
+
 generate_diff_files() {
     local pr_data=$1
     local start_date=$2
@@ -143,42 +159,54 @@ generate_diff_files() {
             clean_title=$(echo "$pr_title" | sed 's/[^a-zA-Z0-9 -]//g' | sed 's/ /_/g' | cut -c1-50)
             repo_short=$(echo "$repo_name" | cut -d'/' -f2)
             filename="${repo_short}-${pr_number}-${clean_title}"
+            local diff_err
 
             if [[ "$use_pdf" == true ]]; then
                 _filename="$filename.pdf"
                 temp_file="/tmp/$filename.txt"
 
                 # Get diff content
-                local diff_err
                 diff_err=$(gh pr diff "$pr_number" --repo "$repo_name" 2>&1 >"$temp_file")
 
-                if [[ $? -eq 0 ]]; then
-                    # Convert diff content to PDF
-                    enscript "$temp_file" -o - 2>/dev/null | ps2pdf - "diffs/$time_range/$_filename" 2>/dev/null
-
-                    if [[ $? -eq 0 ]]; then
-                        echo "✓ Generated: diffs/$time_range/$_filename"
-                        printf "%s|[$pr_title]-[$_filename]\n" "$repo_short" >> "$temp_summary_file"
+                if [[ $? -ne 0 ]]; then
+                    # Fallback to REST API for large diffs (HTTP 406 / too_large)
+                    if [[ "$diff_err" == *"too_large"* ]]; then
+                        echo "✗ Diff too large (406), falling back to REST API for PR #$pr_number..."
+                        get_diff_via_api "$repo_name" "$pr_number" "$temp_file"
                     else
-                        echo "✗✗✗ Failed to convert diff to PDF for PR #$pr_number"
+                        echo "✗✗✗ Failed to generate diff for PR #$pr_number: $diff_err"
+                        continue
                     fi
-
-                    # Clean up temp diff file
-                    rm -f "$temp_file"
-                else
-                    echo "✗✗✗ Failed to generate diff for PR #$pr_number: $diff_err"
                 fi
-            else
-                _filename="$filename.txt"
-                local diff_err
-                diff_err=$(gh pr diff "$pr_number" --repo "$repo_name" 2>&1 > "diffs/$time_range/$_filename")
+
+                # Convert diff content to PDF
+                enscript "$temp_file" -o - 2>/dev/null | ps2pdf - "diffs/$time_range/$_filename" 2>/dev/null
 
                 if [[ $? -eq 0 ]]; then
-                    echo " ✓✓✓ Generated: diffs/$time_range/$_filename"
+                    echo "✓ Generated: diffs/$time_range/$_filename"
                     printf "%s|[$pr_title]-[$_filename]\n" "$repo_short" >> "$temp_summary_file"
                 else
-                    echo "✗✗✗ Failed to generate diff for PR #$pr_number: $diff_err"
+                    echo "✗✗✗ Failed to convert diff to PDF for PR #$pr_number"
                 fi
+
+                # Clean up temp diff file
+                rm -f "$temp_file"
+            else
+                _filename="$filename.txt"
+                diff_err=$(gh pr diff "$pr_number" --repo "$repo_name" 2>&1 > "diffs/$time_range/$_filename")
+
+                if [[ $? -ne 0 ]]; then
+                    if [[ "$diff_err" == *"too_large"* ]]; then
+                        echo "  ⚠ Diff too large, falling back to REST API for PR #$pr_number..."
+                        get_diff_via_api "$repo_name" "$pr_number" "diffs/$time_range/$_filename"
+                    else
+                        echo "✗✗✗ Failed to generate diff for PR #$pr_number: $diff_err"
+                        continue
+                    fi
+                fi
+
+                echo " ✓✓✓ Generated: diffs/$time_range/$_filename"
+                printf "%s|[$pr_title]-[$_filename]\n" "$repo_short" >> "$temp_summary_file"
             fi
         done
 
