@@ -228,6 +228,7 @@ bash ./generate-report.sh 2025-07-01 2025-07-31
 - **File organization**: Creates time-stamped directories (`YYYY-MM-DD_YYYY-MM-DD`) for easy archiving
 - **Summary generation**: Creates master summary file linking PR titles to their diff files
 - **Multiple outputs**: Console report, individual diff files, and summary file
+- **Large diff fallback**: Automatically falls back to the [List pull request files](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests-files) REST API when a diff exceeds GitHub's 300-file limit
 - **Error handling**: Gracefully handles missing PRs, network issues, and invalid dates
 - **Filename sanitization**: Cleans PR titles for safe filesystem usage
 
@@ -256,6 +257,10 @@ gh search prs --author=@me --owner="your-org-name" --merged --created="YYYY-MM-D
 
 # Download individual diff files
 gh pr diff "PR_NUMBER" --repo "REPO_NAME"
+
+# Fallback for large diffs (300+ files) using REST API
+gh api "repos/OWNER/REPO/pulls/PR_NUMBER/files" --paginate
+# https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests-files
 ```
 
 ## Configuration
