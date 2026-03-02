@@ -108,7 +108,7 @@ generate_diff_files() {
     # Check if PDF dependencies are available in the OS
     if check_pdf_dependencies; then
         use_pdf=true
-        echo "✅ PDF dependencies found. Generating PDF files..."
+        echo "PDF dependencies found. Generating PDF files..."
     fi
 
     echo ""
@@ -156,16 +156,16 @@ generate_diff_files() {
                     enscript "$temp_file" -o - 2>/dev/null | ps2pdf - "diffs/$time_range/$_filename" 2>/dev/null
 
                     if [[ $? -eq 0 ]]; then
-                        echo " ✓✓✓ Generated: diffs/$time_range/$_filename"
+                        echo "✓ Generated: diffs/$time_range/$_filename"
                         printf "%s|[$pr_title]-[$_filename]\n" "$repo_short" >> "$temp_summary_file"
                     else
-                        echo " ✗✗✗✗✗✗✗✗✗ Failed to convert diff to PDF for PR #$pr_number"
+                        echo "✗✗✗ Failed to convert diff to PDF for PR #$pr_number"
                     fi
 
                     # Clean up temp diff file
                     rm -f "$temp_file"
                 else
-                    echo " ✗✗✗✗✗✗✗✗✗ Failed to generate diff for PR #$pr_number"
+                    echo "✗✗✗ Failed to generate diff for PR #$pr_number"
                 fi
             else
                 _filename="$filename.txt"
@@ -175,7 +175,7 @@ generate_diff_files() {
                     echo " ✓✓✓ Generated: diffs/$time_range/$_filename"
                     printf "%s|[$pr_title]-[$_filename]\n" "$repo_short" >> "$temp_summary_file"
                 else
-                    echo " ✗✗✗✗✗✗✗✗✗ Failed to generate diff for PR #$pr_number"
+                    echo "✗✗✗ Failed to generate diff for PR #$pr_number"
                 fi
             fi
         done
@@ -185,13 +185,11 @@ generate_diff_files() {
             local current_repo=""
             sort -t'|' -k1,1 "$temp_summary_file" | while IFS='|' read -r repo_name entry; do
                 if [[ "$repo_name" != "$current_repo" ]]; then
-                    echo "" >> "$summary_file"
-                    echo "## $repo_name" >> "$summary_file"
-                    echo "" >> "$summary_file"
+                    printf "\n## %s\n\n" "$repo_name"
                     current_repo="$repo_name"
                 fi
-                echo "$entry" >> "$summary_file"
-            done
+                echo "$entry"
+            done >> "$summary_file"
             rm -f "$temp_summary_file"
         fi
     else
@@ -201,7 +199,7 @@ generate_diff_files() {
     # Summary file creation
     if [[ -f "$summary_file" ]]; then
         echo ""
-        echo " ✓✓✓ Generated summary: $summary_file"
+        echo "✓✓✓ Generated summary: $summary_file"
     fi
 }
 
