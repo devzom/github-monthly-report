@@ -149,7 +149,8 @@ generate_diff_files() {
                 temp_file="/tmp/$filename.txt"
 
                 # Get diff content
-                gh pr diff "$pr_number" --repo "$repo_name" > "$temp_file" 2>/dev/null
+                local diff_err
+                diff_err=$(gh pr diff "$pr_number" --repo "$repo_name" 2>&1 >"$temp_file")
 
                 if [[ $? -eq 0 ]]; then
                     # Convert diff content to PDF
@@ -165,17 +166,18 @@ generate_diff_files() {
                     # Clean up temp diff file
                     rm -f "$temp_file"
                 else
-                    echo "✗✗✗ Failed to generate diff for PR #$pr_number"
+                    echo "✗✗✗ Failed to generate diff for PR #$pr_number: $diff_err"
                 fi
             else
                 _filename="$filename.txt"
-                gh pr diff "$pr_number" --repo "$repo_name" > "diffs/$time_range/$_filename" 2>/dev/null
+                local diff_err
+                diff_err=$(gh pr diff "$pr_number" --repo "$repo_name" 2>&1 > "diffs/$time_range/$_filename")
 
                 if [[ $? -eq 0 ]]; then
                     echo " ✓✓✓ Generated: diffs/$time_range/$_filename"
                     printf "%s|[$pr_title]-[$_filename]\n" "$repo_short" >> "$temp_summary_file"
                 else
-                    echo "✗✗✗ Failed to generate diff for PR #$pr_number"
+                    echo "✗✗✗ Failed to generate diff for PR #$pr_number: $diff_err"
                 fi
             fi
         done
@@ -196,9 +198,8 @@ generate_diff_files() {
         echo "No repositories found."
     fi
 
-    # Summary file creation
     if [[ -f "$summary_file" ]]; then
-        echo ""
+        echo "==============================================="
         echo "✓✓✓ Generated summary: $summary_file"
     fi
 }
@@ -264,5 +265,4 @@ if [[ -z "$pr_data" || "$pr_data" == "[]" ]];
 fi
 
 generate_pr_report "$pr_data"
-
 generate_diff_files "$pr_data" "$start_date" "$end_date"
