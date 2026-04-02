@@ -1,18 +1,10 @@
 {
   "name": "github-reports-tax-costs",
-  "description": "Semi-automated tool for generating monthly tax deductible reports based on GitHub merged pull requests.",
+  "description": "Semi-automated tool for generating monthly tax deductible reports based on GitHub merged pull requests, works with gh-cli.",
   "version": "1.3.0",
   "repository": {
-    "url": "https://github.com/devzom/github-monthly-report"
+    "url": "git+https://github.com/devzom/github-monthly-report.git"
   },
-  "keywords": [
-    "github",
-    "reports",
-    "tax",
-    "costs",
-    "automation",
-    "bash"
-  ],
   "author": {
     "name": "Jakub Zomerfeld",
     "email": "dev.zomerfeld@gmail.com"
@@ -21,6 +13,18 @@
   "bugs": {
     "url": "https://github.com/devzom/github-monthly-report/issues"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "keywords": [
+    "github",
+    "gh-cli",
+    "reports",
+    "tax",
+    "costs",
+    "automation",
+    "bash"
+  ],
   "main": "generate-report.sh",
   "scripts": {
     "start": "bash generate-report.sh"
