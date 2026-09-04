@@ -6,6 +6,12 @@ By default it produces `.txt` files, but can be configured to generate `.pdf` fi
 
 Supports flexible organization targeting - either specify the organization as a parameter or set a default in the script.
 
+As simple as running
+
+```bash
+./generate-report.sh my-org-name 2026-08
+```
+
 ## Setups
 
 - Bash shell (macOS/Linux) or Git Bash/WSL (Windows)
